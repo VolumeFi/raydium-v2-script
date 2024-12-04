@@ -5,6 +5,8 @@
   "dependencies": {
     "@raydium-io/raydium-sdk-v2": "^0.1.92-alpha",
     "@solana/spl-token": "^0.4.9",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-ledger": "^0.9.25",
     "@solana/web3.js": "^1.95.5",
     "@triton-one/yellowstone-grpc": "^1.2.0",
     "@types/jsonfile": "^6.1.4",

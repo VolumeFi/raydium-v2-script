@@ -6,12 +6,17 @@ import {
   getPdaPersonalPositionAddress,
 } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { initSdk, txVersion } from '../config'
+import { initSdk, txVersion } from '../config_ledger'
 
 export const lockPosition = async (position_nft_mint: string) => {
   try {
     const raydium = await initSdk()
 
+    if (!raydium) {
+      console.error('raydium is undefined')
+      process.exit()
+    }
+    
     const positionNftMint = new PublicKey(position_nft_mint)
     const positionPubKey = getPdaPersonalPositionAddress(CLMM_PROGRAM_ID, positionNftMint).publicKey // devnet:  DEVNET_PROGRAM_ID.CLMM
     const pos = await raydium.connection.getAccountInfo(positionPubKey)
