@@ -5,20 +5,22 @@ import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import { devConfigs } from './utils'
 
-export const createPool = async () => {
+export const createPool = async (mint1_token_address: string, mint2_token_address: string) => {
   try {
     const raydium = await initSdk({ loadToken: true })
 
     // you can call sdk api to get mint info or paste mint info from api: https://api-v3.raydium.io/mint/list
     // RAY
     // const mint1 = await raydium.token.getTokenInfo('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R')
-    const mint1 = await raydium.token.getTokenInfo('7QN7Bq8Hh9cU5UZdQ4n2AWvuxFeeXr7aGgvQNG9ERZJC')  // GRAIN
+    // const mint1 = await raydium.token.getTokenInfo('7QN7Bq8Hh9cU5UZdQ4n2AWvuxFeeXr7aGgvQNG9ERZJC')  // GRAIN
+    const mint1 = await raydium.token.getTokenInfo(mint1_token_address) 
     // USDT
     // const mint2 = await raydium.token.getTokenInfo('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB')
-    const mint2 = await raydium.token.getTokenInfo('So11111111111111111111111111111111111111112') // SOL
+    // const mint2 = await raydium.token.getTokenInfo('So11111111111111111111111111111111111111112') // SOL
+    const mint2 = await raydium.token.getTokenInfo(mint2_token_address)
     const clmmConfigs = await raydium.api.getClmmConfigs()
     // const clmmConfigs = devConfigs // devnet configs
-  
+
     const { execute } = await raydium.clmm.createPool({
       programId: CLMM_PROGRAM_ID,
       // programId: DEVNET_PROGRAM_ID.CLMM,
@@ -34,6 +36,7 @@ export const createPool = async () => {
       //   microLamports: 46591500,
       // },
     })
+
     // don't want to wait confirm, set sendAndConfirm to false or don't pass any params to execute
     const { txId } = await execute({ sendAndConfirm: true })
     console.log('clmm pool created:', { txId: `https://explorer.solana.com/tx/${txId}` })
@@ -46,4 +49,4 @@ export const createPool = async () => {
 }
 
 /** uncomment code below to execute */
-createPool()
+createPool(process.argv[2], process.argv[3])
