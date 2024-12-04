@@ -1,12 +1,17 @@
 import { ApiV3PoolInfoConcentratedItem, ClmmKeys } from '@raydium-io/raydium-sdk-v2'
 import BN from 'bn.js'
-import { initSdk, txVersion } from '../config'
+import { initSdk, txVersion } from '../config_ledger'
 import { isValidClmm } from './utils'
 
 export const decreaseLiquidity = async (pool_id: string) => {
   try {
     const raydium = await initSdk()
 
+    if (!raydium) {
+      console.error('raydium is undefined')
+      process.exit()
+    }
+    
     let poolInfo: ApiV3PoolInfoConcentratedItem
     // SOL-USDC pool
     const poolId = pool_id

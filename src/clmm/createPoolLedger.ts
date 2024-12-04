@@ -1,6 +1,6 @@
 import { CLMM_PROGRAM_ID, DEVNET_PROGRAM_ID } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
-import { initSdk, txVersion } from '../config'
+import { initSdk, txVersion } from '../config_ledger'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import { devConfigs } from './utils'
@@ -9,6 +9,11 @@ export const createPool = async (mint1_token_address: string, mint2_token_addres
   try {
     const raydium = await initSdk({ loadToken: true })
 
+    if (!raydium) {
+      console.error('raydium is undefined')
+      process.exit()
+    }
+    
     // you can call sdk api to get mint info or paste mint info from api: https://api-v3.raydium.io/mint/list
     // RAY
     // const mint1 = await raydium.token.getTokenInfo('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R')

@@ -1,6 +1,6 @@
 import { ApiV3PoolInfoConcentratedItem, TickUtils, PoolUtils, ClmmKeys } from '@raydium-io/raydium-sdk-v2'
 import BN from 'bn.js'
-import { initSdk, txVersion } from '../config'
+import { initSdk, txVersion } from '../config_ledger'
 import Decimal from 'decimal.js'
 import { isValidClmm } from './utils'
 
@@ -8,6 +8,11 @@ export const createPosition = async (pool_id: string, input_amount: number, star
   try {
     const raydium = await initSdk()
 
+    if (!raydium) {
+      console.error('raydium is undefined')
+      process.exit()
+    }
+    
     let poolInfo: ApiV3PoolInfoConcentratedItem
     // RAY-USDC pool
     // const poolId = '61R1ndXxvsWXXkWSyNkCxnzwd3zUNB8Q2ibmkiLPC8ht'

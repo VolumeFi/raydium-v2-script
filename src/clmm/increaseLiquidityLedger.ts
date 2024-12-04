@@ -1,26 +1,27 @@
-import { ApiV3PoolInfoConcentratedItem, TickUtils, PoolUtils, ClmmKeys } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3PoolInfoConcentratedItem, ClmmKeys, PoolUtils } from '@raydium-io/raydium-sdk-v2'
 import BN from 'bn.js'
-import { initSdk, txVersion } from '../config'
+import { initSdk, txVersion } from '../config_ledger'
 import Decimal from 'decimal.js'
 import { isValidClmm } from './utils'
 
-export const createPosition = async (pool_id: string, input_amount: number, start_price: number, end_price: number) => {
+export const increaseLiquidity = async (pool_id: string, input_amount: number, slippage_val: number = 0.05) => {
   try {
     const raydium = await initSdk()
 
-    let poolInfo: ApiV3PoolInfoConcentratedItem
-    // RAY-USDC pool
-    // const poolId = '61R1ndXxvsWXXkWSyNkCxnzwd3zUNB8Q2ibmkiLPC8ht'
-    // GRAIN-SOL pool
-    // const poolId = '6iuJa6UjKbauD1jveFa7JLf9qgBjpWdoQPyJkZKhwjxm'
+    if (!raydium) {
+      console.error('raydium is undefined')
+      process.exit()
+    }
+    
+    // Pool Id
     const poolId = pool_id
+    let poolInfo: ApiV3PoolInfoConcentratedItem
     let poolKeys: ClmmKeys | undefined
   
     if (raydium.cluster === 'mainnet') {
       // note: api doesn't support get devnet pool info, so in devnet else we go rpc method
       // if you wish to get pool info from rpc, also can modify logic to go rpc method directly
       const data = await raydium.api.fetchPoolById({ ids: poolId })
-      console.log(data);
       poolInfo = data[0] as ApiV3PoolInfoConcentratedItem
       if (!isValidClmm(poolInfo.programId)) throw new Error('target pool is not CLMM pool')
     } else {
@@ -33,58 +34,50 @@ export const createPosition = async (pool_id: string, input_amount: number, star
     // const rpcData = await raydium.clmm.getRpcClmmPoolInfo({ poolId: poolInfo.id })
     // poolInfo.price = rpcData.currentPrice
   
-    // const inputAmount = 0.000001 // RAY amount
+    const allPosition = await raydium.clmm.getOwnerPositionInfo({ programId: poolInfo.programId })
+    if (!allPosition.length) throw new Error('user do not have any positions')
+  
+    const position = allPosition.find((p) => p.poolId.toBase58() === poolInfo.id)
+    if (!position) throw new Error(`user do not have position in pool: ${poolInfo.id}`)
+  
     const inputAmount = input_amount
-    // const [startPrice, endPrice] = [0.000001, 100000]
-    const [startPrice, endPrice] = [start_price, end_price]
-  
-    const { tick: lowerTick } = TickUtils.getPriceAndTick({
-      poolInfo,
-      price: new Decimal(startPrice),
-      baseIn: true,
-    })
-  
-    const { tick: upperTick } = TickUtils.getPriceAndTick({
-      poolInfo,
-      price: new Decimal(endPrice),
-      baseIn: true,
-    })
+    const slippage = slippage_val
   
     const epochInfo = await raydium.fetchEpochInfo()
     const res = await PoolUtils.getLiquidityAmountOutFromAmountIn({
       poolInfo,
       slippage: 0,
       inputA: true,
-      tickUpper: Math.max(lowerTick, upperTick),
-      tickLower: Math.min(lowerTick, upperTick),
+      tickUpper: Math.max(position.tickLower, position.tickUpper),
+      tickLower: Math.min(position.tickLower, position.tickUpper),
       amount: new BN(new Decimal(inputAmount || '0').mul(10 ** poolInfo.mintA.decimals).toFixed(0)),
       add: true,
       amountHasFee: true,
       epochInfo: epochInfo,
     })
   
-    const { execute, extInfo } = await raydium.clmm.openPositionFromBase({
+    const { execute } = await raydium.clmm.increasePositionFromLiquidity({
       poolInfo,
       poolKeys,
-      tickUpper: Math.max(lowerTick, upperTick),
-      tickLower: Math.min(lowerTick, upperTick),
-      base: 'MintA',
+      ownerPosition: position,
       ownerInfo: {
         useSOLBalance: true,
       },
-      baseAmount: new BN(new Decimal(inputAmount || '0').mul(10 ** poolInfo.mintA.decimals).toFixed(0)),
-      otherAmountMax: res.amountSlippageB.amount,
+      liquidity: new BN(new Decimal(res.liquidity.toString()).mul(1 - slippage).toFixed(0)),
+      amountMaxA: new BN(new Decimal(inputAmount || '0').mul(10 ** poolInfo.mintA.decimals).toFixed(0)),
+      amountMaxB: new BN(new Decimal(res.amountSlippageB.amount.toString()).mul(1 + slippage).toFixed(0)),
+      checkCreateATAOwner: true,
       txVersion,
       // optional: set up priority fee here
-      computeBudgetConfig: {
-        units: 600000,
-        microLamports: 100000,
-      },
+      // computeBudgetConfig: {
+      //   units: 600000,
+      //   microLamports: 46591500,
+      // },
     })
   
     // don't want to wait confirm, set sendAndConfirm to false or don't pass any params to execute
     const { txId } = await execute({ sendAndConfirm: true })
-    console.log('clmm position opened:', { txId, nft: extInfo.nftMint.toBase58() })
+    console.log('clmm position liquidity increased:', { txId: `https://explorer.solana.com/tx/${txId}` })
     process.exit() // if you don't want to end up node execution, comment this line
   } catch (err) {
     console.error(err)
@@ -93,4 +86,4 @@ export const createPosition = async (pool_id: string, input_amount: number, star
 }
 
 /** uncomment code below to execute */
-createPosition(process.argv[2], Number(process.argv[3]), Number(process.argv[4]), Number(process.argv[5]))
+increaseLiquidity(process.argv[2], Number(process.argv[3]), Number(process.argv[4]))

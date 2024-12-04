@@ -1,16 +1,19 @@
 import { ApiV3PoolInfoConcentratedItem, ClmmKeys } from '@raydium-io/raydium-sdk-v2'
-import BN from 'bn.js'
-import { initSdk, txVersion } from '../config'
+import { initSdk, txVersion } from '../config_ledger'
 import { isValidClmm } from './utils'
 
-export const decreaseLiquidity = async (pool_id: string) => {
+export const closePosition = async (pool_id: string) => {
   try {
     const raydium = await initSdk()
-
     let poolInfo: ApiV3PoolInfoConcentratedItem
-    // SOL-USDC pool
+    // pool id
     const poolId = pool_id
     let poolKeys: ClmmKeys | undefined
+  
+    if (!raydium) {
+      console.error('raydium is undefined')
+      process.exit()
+    }
 
     if (raydium.cluster === 'mainnet') {
       // note: api doesn't support get devnet pool info, so in devnet else we go rpc method
@@ -23,39 +26,27 @@ export const decreaseLiquidity = async (pool_id: string) => {
       poolInfo = data.poolInfo
       poolKeys = data.poolKeys
     }
-
-    const allPosition = await raydium.clmm.getOwnerPositionInfo({ programId: poolInfo.programId })
-    if (!allPosition.length) throw new Error('user do not have any positions')
-
-    const position = allPosition.find((p) => p.poolId.toBase58() === poolInfo.id)
-    if (!position) throw new Error(`user do not have position in pool: ${poolInfo.id}`)
-
+  
     /** code below will get on chain realtime price to avoid slippage error, uncomment it if necessary */
     // const rpcData = await raydium.clmm.getRpcClmmPoolInfo({ poolId: poolInfo.id })
     // poolInfo.price = rpcData.currentPrice
-    const { execute } = await raydium.clmm.decreaseLiquidity({
+  
+    const allPosition = await raydium.clmm.getOwnerPositionInfo({ programId: poolInfo.programId })
+    if (!allPosition.length) throw new Error('user do not have any positions')
+  
+    const position = allPosition.find((p) => p.poolId.toBase58() === poolInfo.id)
+    if (!position) throw new Error(`user do not have position in pool: ${poolInfo.id}`)
+  
+    const { execute } = await raydium.clmm.closePosition({
       poolInfo,
       poolKeys,
       ownerPosition: position,
-      ownerInfo: {
-        useSOLBalance: true,
-        // if liquidity wants to decrease doesn't equal to position liquidity, set closePosition to false
-        closePosition: true,
-      },
-      liquidity: position.liquidity,
-      amountMinA: new BN(0),
-      amountMinB: new BN(0),
       txVersion,
-      // optional: set up priority fee here
-      // computeBudgetConfig: {
-      //   units: 600000,
-      //   microLamports: 46591500,
-      // },
     })
-
+  
     // don't want to wait confirm, set sendAndConfirm to false or don't pass any params to execute
     const { txId } = await execute({ sendAndConfirm: true })
-    console.log('withdraw liquidity from clmm position:', { txId: `https://explorer.solana.com/tx/${txId}` })
+    console.log('clmm position closed:', { txId: `https://explorer.solana.com/tx/${txId}` })
     process.exit() // if you don't want to end up node execution, comment this line
   } catch (err) {
     console.error(err)
@@ -64,4 +55,4 @@ export const decreaseLiquidity = async (pool_id: string) => {
 }
 
 /** uncomment code below to execute */
-decreaseLiquidity(process.argv[2])
+closePosition(process.argv[2])
