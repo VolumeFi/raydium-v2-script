@@ -23,49 +23,49 @@ If you use ledger, input your YOUR_RPC_URL in config_ledger.ts.
 #### if you use wallet private key
 
 ```sh
-npm run dev src/clmm/createPool.ts [mint1_token_address] [mint2_token_address]
+npm run dev src/clmm/createPool.ts [mint1_token_address] [mint2_token_address] [initial_price]
 ```
 
 or
 
 ```sh
-yarn dev src/clmm/createPool.ts [mint1_token_address] [mint2_token_address]
+yarn dev src/clmm/createPool.ts [mint1_token_address] [mint2_token_address] [initial_price]
 ```
 
 e.g. If you are going to create RAY/SOL pool, then here it is.
 
 ```sh
-npm run dev src/clmm/createPool.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112
+npm run dev src/clmm/createPool.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112 1
 ```
 
 or
 
 ```sh
-yarn dev src/clmm/createPool.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112
+yarn dev src/clmm/createPool.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112 1
 ```
 
 #### if yo use ledger wallet
 
 ```sh
-npm run dev src/clmm/createPoolLedger.ts [mint1_token_address] [mint2_token_address]
+npm run dev src/clmm/createPoolLedger.ts [mint1_token_address] [mint2_token_address] [initial_price]
 ```
 
 or
 
 ```sh
-yarn dev src/clmm/createPoolLedger.ts [mint1_token_address] [mint2_token_address]
+yarn dev src/clmm/createPoolLedger.ts [mint1_token_address] [mint2_token_address] [initial_price]
 ```
 
 e.g. If you are going to create RAY/SOL pool, then here it is.
 
 ```sh
-npm run dev src/clmm/createPoolLedger.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112
+npm run dev src/clmm/createPoolLedger.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112 1
 ```
 
 or
 
 ```sh
-yarn dev src/clmm/createPoolLedger.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112
+yarn dev src/clmm/createPoolLedger.ts 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R So11111111111111111111111111111111111111112 1
 ```
 
 ### create position
