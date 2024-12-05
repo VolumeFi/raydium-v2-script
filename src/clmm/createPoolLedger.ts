@@ -5,7 +5,7 @@ import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import { devConfigs } from './utils'
 
-export const createPool = async (mint1_token_address: string, mint2_token_address: string) => {
+export const createPool = async (mint1_token_address: string, mint2_token_address: string, initial_price: Decimal) => {
   try {
     const raydium = await initSdk({ loadToken: true })
 
@@ -13,7 +13,7 @@ export const createPool = async (mint1_token_address: string, mint2_token_addres
       console.error('raydium is undefined')
       process.exit()
     }
-    
+
     // you can call sdk api to get mint info or paste mint info from api: https://api-v3.raydium.io/mint/list
     // RAY
     // const mint1 = await raydium.token.getTokenInfo('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R')
@@ -32,7 +32,7 @@ export const createPool = async (mint1_token_address: string, mint2_token_addres
       mint1,
       mint2,
       ammConfig: { ...clmmConfigs[0], id: new PublicKey(clmmConfigs[0].id), fundOwner: '', description: '' },
-      initialPrice: new Decimal(1),
+      initialPrice: initial_price,
       startTime: new BN(0),
       txVersion,
       // optional: set up priority fee here
@@ -54,4 +54,4 @@ export const createPool = async (mint1_token_address: string, mint2_token_addres
 }
 
 /** uncomment code below to execute */
-createPool(process.argv[2], process.argv[3])
+createPool(process.argv[2], process.argv[3], new Decimal(process.argv[4]))
