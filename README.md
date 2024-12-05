@@ -14,9 +14,9 @@ or
 yarn
 ```
 
-### please copy the src/config.ts.template file and name it config.ts and input your YOUR_WALLET_SECRET_KEY and YOUR_RPC_URL if you are going to use private key
+If you are going to use private key, please copy the src/config.ts.template file and name it config.ts and input your YOUR_WALLET_SECRET_KEY and YOUR_RPC_URL.
 
-### input your YOUR_RPC_URL in config_ledger.ts if you use ledger.
+If you use ledger, input your YOUR_RPC_URL in config_ledger.ts.
 
 ### create pool
 
