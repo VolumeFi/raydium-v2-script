@@ -5,7 +5,7 @@ import Decimal from 'decimal.js'
 import BN from 'bn.js'
 import { devConfigs } from './utils'
 
-export const createPool = async (mint1_token_address: string, mint2_token_address: string, initial_price: Decimal) => {
+export const createPool = async (mint1_token_address: string, mint2_token_address: string, initial_price: Decimal, config_id: number) => {
   try {
     const raydium = await initSdk({ loadToken: true })
 
@@ -31,7 +31,7 @@ export const createPool = async (mint1_token_address: string, mint2_token_addres
       // programId: DEVNET_PROGRAM_ID.CLMM,
       mint1,
       mint2,
-      ammConfig: { ...clmmConfigs[0], id: new PublicKey(clmmConfigs[0].id), fundOwner: '', description: '' },
+      ammConfig: { ...clmmConfigs[config_id], id: new PublicKey(clmmConfigs[config_id].id), fundOwner: '', description: '' },
       initialPrice: initial_price,
       startTime: new BN(0),
       txVersion,
@@ -54,4 +54,4 @@ export const createPool = async (mint1_token_address: string, mint2_token_addres
 }
 
 /** uncomment code below to execute */
-createPool(process.argv[2], process.argv[3], new Decimal(process.argv[4]))
+createPool(process.argv[2], process.argv[3], new Decimal(process.argv[4]), parseInt(process.argv[5]))
